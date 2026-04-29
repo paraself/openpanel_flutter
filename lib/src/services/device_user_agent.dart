@@ -14,7 +14,9 @@ class DeviceUserAgent {
   Future<String> getUserAgent() async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final appName = packageInfo.appName;
+      // HTTP header values must be ASCII per RFC 7230. Apps with non-ASCII
+      // display names (e.g. CJK) would otherwise crash dio at header serialization.
+      final appName = _sanitizeForHeader(packageInfo.appName);
       final appVersion = packageInfo.version;
       final appBuild = packageInfo.buildNumber;
 
@@ -44,6 +46,14 @@ class DeviceUserAgent {
   String _defaultUserAgent(String appName, String appVersion, String appBuild,
       {String? error}) {
     return '$appName/$appVersion (Unknown Device; build:$appBuild${error != null ? "; Error: $error" : ""})';
+  }
+
+  /// Strips non-ASCII characters from a header value and falls back to "app"
+  /// when the result is empty. RFC 7230 mandates header values be ASCII; any
+  /// CJK / emoji / accented chars trip dio's header serializer.
+  static String _sanitizeForHeader(String input) {
+    final ascii = input.replaceAll(RegExp(r'[^\x20-\x7E]'), '').trim();
+    return ascii.isEmpty ? 'app' : ascii;
   }
 
   String _buildWebUserAgent(
