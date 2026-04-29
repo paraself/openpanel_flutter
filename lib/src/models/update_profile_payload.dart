@@ -29,12 +29,15 @@ class UpdateProfilePayload extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
+    // OpenPanel server schema rejects explicit `null` for these optional fields
+    // (Validation failed: "Expected string, received null"). Omit them when
+    // unset rather than serialising as null.
     return {
       'profileId': profileId,
-      'firstName': firstName,
-      'lastName': lastName,
-      'avatar': avatar,
-      'email': email,
+      if (firstName != null) 'firstName': firstName,
+      if (lastName != null) 'lastName': lastName,
+      if (avatar != null) 'avatar': avatar,
+      if (email != null) 'email': email,
       'properties': properties,
     };
   }

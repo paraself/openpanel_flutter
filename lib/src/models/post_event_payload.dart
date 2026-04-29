@@ -26,11 +26,13 @@ class PostEventPayload extends Equatable {
   }
 
   Map<String, dynamic> toJson() {
+    // OpenPanel server schema rejects explicit `null` for optional fields
+    // (e.g. profileId before login). Omit them when unset.
     return {
       'name': name,
       'timestamp': timestamp,
-      'deviceId': deviceId,
-      'profileId': profileId,
+      if (deviceId != null) 'deviceId': deviceId,
+      if (profileId != null) 'profileId': profileId,
       'properties': properties,
     };
   }
