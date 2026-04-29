@@ -31,6 +31,7 @@ class OpenpanelHttpClient {
           'openpanel-sdk-version': '0.2.0',
           if (options.clientSecret != null)
             'openpanel-client-secret': options.clientSecret,
+          if (options.origin != null) 'Origin': options.origin,
           'User-Agent': await DeviceUserAgent().getUserAgent(),
         },
       ),

@@ -14,6 +14,21 @@ class OpenpanelOptions {
   /// Your Openpanel client secret.
   final String? clientSecret;
 
+  /// Optional HTTP `Origin` header value sent with every request.
+  ///
+  /// Mobile clients normally do not send an `Origin` header, which forces the
+  /// OpenPanel server-side ingestion to fall back to `clientSecret`-based
+  /// authentication (the only remaining auth path when CORS is unavailable).
+  ///
+  /// By providing an explicit `origin` here, you can route mobile traffic
+  /// through the same CORS-allowlist authentication used by the Web SDK,
+  /// avoiding the need to ship a `clientSecret` inside the application binary.
+  ///
+  /// The value should match an entry in the OpenPanel project's CORS
+  /// allowlist (e.g. `https://example.com`). When `null`, no `Origin` header
+  /// is added and the SDK falls back to the original behaviour.
+  final String? origin;
+
   /// Enable verbose logging
   final bool verbose;
 
@@ -24,6 +39,7 @@ class OpenpanelOptions {
     this.url,
     required this.clientId,
     this.clientSecret,
+    this.origin,
     this.verbose = false,
     this.tracingSampleRate = 1.0,
   });
