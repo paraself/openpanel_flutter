@@ -101,7 +101,10 @@ class OpenpanelHttpClient {
         'type': 'track',
         'payload': payload.toJson(),
       });
-      return response.data as String;
+      // /track 在不同后端版本下返回 String 或 JSON 对象（如 {"status":"ok"}）。
+      // 老版本直接 `as String` 会在新版本上抛 TypeError 并逃逸成未捕获异常。
+      final data = response.data;
+      return data is String ? data : data?.toString();
     });
 
     if (response.error != null) {
@@ -122,6 +125,11 @@ class OpenpanelHttpClient {
     } on SocketException catch (e) {
       _logError('Failed to connect to the internet.');
       return (response: null, error: e);
+    } catch (e, st) {
+      // 防御性兜底：任何意外异常（如 TypeError、JSON 解析错误等）不应逃逸到
+      // 上层 zone 触发 dart_vm_initializer 未捕获异常报告——埋点是 fire-and-forget。
+      _logError('Unexpected analytics error: $e\n$st');
+      return (response: null, error: null);
     }
   }
 
